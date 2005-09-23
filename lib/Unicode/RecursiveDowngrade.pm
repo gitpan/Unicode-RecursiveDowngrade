@@ -3,7 +3,7 @@ package Unicode::RecursiveDowngrade;
 use strict;
 use Carp;
 use vars qw($DowngradeFunc $VERSION);
-$VERSION = 0.01;
+$VERSION = 0.02;
 
 BEGIN {
     $DowngradeFunc = sub { return pack('C0A*', shift) };
@@ -26,13 +26,15 @@ sub filter {
 }
 
 sub downgrade {
-    my($self, $var) = @_;
-    my $ref = ref($var);
+    my($self, $var, $ref) = @_;
+    $ref ||= ref($var);
     if ($ref eq 'ARRAY') {
 	@$var = map { $self->downgrade($_) } @$var;
     }
     elsif ($ref eq 'HASH') {
-	%$var = map { $_ => $self->downgrade($var->{$_}) } keys %$var;
+	%$var =
+	    map { $self->downgrade($_) => $self->downgrade($var->{$_}) }
+		keys %$var;
     }
     elsif ($ref eq 'SCALAR') {
 	$$var = $self->downgrade($$var);
@@ -40,7 +42,16 @@ sub downgrade {
     elsif ($ref eq 'GLOB') {
 	*var = $self->downgrade(*var);
     }
-    elsif ($ref ne 'CODE') {
+    elsif ($ref ne '' && $ref ne 'CODE') { # maybe blessed reference
+	my $blessed_class = $ref;
+	require overload;
+	my($blessed_ref) =
+	    overload::StrVal($var) =~ /^$blessed_class\=(.+?)\(0x[\da-f]+\)$/i;
+	if (length $blessed_ref) {
+	    $var = bless $self->downgrade($var, $blessed_ref), $blessed_class;
+	}
+    }
+    elsif ($ref eq '') {
 	my $filter = $self->filter || sub { shift };
 	$var = $filter->($DowngradeFunc->($var));
     }
@@ -67,7 +78,7 @@ Unicode::RecursiveDowngrade - Turn off the UTF-8 flags inside of complex variabl
      corge => \$grault,
  };
  $unflagged = $rd->downgrade($var);
- 
+
 =head1 DESCRIPTION
 
 Unicode::RecursiveDowngrade will turn off the UTF-8 flag inside of
