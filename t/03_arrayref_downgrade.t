@@ -19,7 +19,7 @@ else {
 }
 use_ok('Unicode::RecursiveDowngrade');
 SKIP: {
-    skip 'can not call utf8::is_utf8' if $] < 5.008001;
+    skip 'can not call utf8::is_utf8', 8 if $] < 5.008001;
     for my $elem (@$dummy) {
 	ok(utf8::is_utf8($elem), "is flagged variable");
     }

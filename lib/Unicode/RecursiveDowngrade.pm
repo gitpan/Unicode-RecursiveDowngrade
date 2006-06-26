@@ -3,10 +3,10 @@ package Unicode::RecursiveDowngrade;
 use strict;
 use Carp;
 use vars qw($DowngradeFunc $VERSION);
-$VERSION = 0.02;
+$VERSION = 0.03;
 
 BEGIN {
-    $DowngradeFunc = sub { return pack('C0A*', shift) };
+    $DowngradeFunc = sub { return defined $_[0] ? pack('C0A*', shift) : undef };
 }
 
 sub new { return bless {}, shift }

@@ -32,7 +32,7 @@ else {
 }
 use_ok('Unicode::RecursiveDowngrade');
 SKIP: {
-    skip 'can not call utf8::is_utf8' if $] < 5.008001;
+    skip 'can not call utf8::is_utf8', 16 if $] < 5.008001;
     for my $key (keys %$dummy) {
 	ok(utf8::is_utf8($dummy->{$key}), "is flagged variable");
     }
