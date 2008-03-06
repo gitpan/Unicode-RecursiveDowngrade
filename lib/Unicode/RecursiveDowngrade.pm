@@ -2,8 +2,9 @@ package Unicode::RecursiveDowngrade;
 
 use strict;
 use Carp;
+use bytes;
 use vars qw($DowngradeFunc $VERSION);
-$VERSION = 0.03;
+$VERSION = 0.04;
 
 BEGIN {
     $DowngradeFunc = sub { return defined $_[0] ? pack('C0A*', shift) : undef };
